@@ -12,6 +12,64 @@ LLM_PRED_FILE = os.path.join(FIXED_DIR, "llm_predictions.txt")             # 格
 LLM_NPZ_FILE = os.path.join(FIXED_DIR, "llm_predictions.npz")              # 二进制格式的LLM预测结果文件
 
 
+def parse_llm_prediction_text(llm_output):
+    """Parse the documented one-prediction-per-line format without skipping bad rows."""
+    predictions = []
+    for line_number, raw_line in enumerate(llm_output.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        fields = line.split(",")
+        if len(fields) != 2:
+            raise ValueError(f"第 {line_number} 行格式错误，应为“边缘ID,预测类型”")
+        try:
+            edge_id, edge_type = (int(field.strip()) for field in fields)
+        except ValueError as exc:
+            raise ValueError(f"第 {line_number} 行的边缘 ID 和类型必须是整数") from exc
+        predictions.append((edge_id, edge_type))
+
+    return sorted(predictions, key=lambda prediction: prediction[0])
+
+
+def validate_llm_predictions(predictions, required_edge_ids, num_edges):
+    """Require one in-range type (0-5) for every requested edge and no extras."""
+    required_ids = list(required_edge_ids)
+    if len(set(required_ids)) != len(required_ids):
+        raise ValueError("待预测边缘列表包含重复 ID")
+
+    expected_ids = set()
+    for edge_id in required_ids:
+        if not isinstance(edge_id, int) or isinstance(edge_id, bool):
+            raise ValueError(f"待预测边缘 ID 无效: {edge_id!r}")
+        if edge_id < 0 or edge_id >= num_edges:
+            raise ValueError(f"待预测边缘 ID 越界: {edge_id} (边缘数 {num_edges})")
+        expected_ids.add(edge_id)
+
+    predictions_by_id = {}
+    for prediction in predictions:
+        if len(prediction) != 2:
+            raise ValueError(f"预测记录格式无效: {prediction!r}")
+        edge_id, edge_type = prediction
+        if not isinstance(edge_id, int) or isinstance(edge_id, bool):
+            raise ValueError(f"边缘 ID 必须是整数: {edge_id!r}")
+        if edge_id < 0 or edge_id >= num_edges:
+            raise ValueError(f"边缘 ID 越界: {edge_id} (边缘数 {num_edges})")
+        if edge_id not in expected_ids:
+            raise ValueError(f"收到未请求的边缘 ID: {edge_id}")
+        if edge_id in predictions_by_id:
+            raise ValueError(f"边缘 ID 重复: {edge_id}")
+        if not isinstance(edge_type, int) or isinstance(edge_type, bool) or not 0 <= edge_type <= 5:
+            raise ValueError(f"边缘 {edge_id} 的类型必须是 0-5 之间的整数，收到 {edge_type!r}")
+        predictions_by_id[edge_id] = edge_type
+
+    missing_ids = sorted(expected_ids - predictions_by_id.keys())
+    if missing_ids:
+        raise ValueError(f"缺少边缘预测: {missing_ids}")
+
+    return [(edge_id, predictions_by_id[edge_id]) for edge_id in sorted(expected_ids)]
+
+
 def calculate_edge_properties(source_x, source_y, target_x, target_y, layout_matrix):
     """
     计算边缘的方位属性和方向属性
@@ -131,24 +189,7 @@ def parse_llm_output(llm_output_file):
         with open(llm_output_file, 'r', encoding='utf-8') as f:
             llm_output = f.read().strip()
         
-        predictions = []
-        lines = llm_output.split('\n')
-        
-        # 过滤掉可能的额外内容，只保留边缘ID和预测类型
-        for line in lines:
-            line = line.strip()
-            if line and ',' in line:
-                try:
-                    edge_id, edge_type = line.split(',')
-                    edge_id = int(edge_id.strip())
-                    edge_type = int(edge_type.strip())
-                    predictions.append((edge_id, edge_type))
-                except ValueError:
-                    # 跳过格式不正确的行
-                    continue
-        
-        # 按边缘ID排序
-        predictions.sort(key=lambda x: x[0])
+        predictions = parse_llm_prediction_text(llm_output)
         
         print(f"成功解析 {len(predictions)} 个边缘的预测结果")
         return predictions
@@ -229,6 +270,11 @@ def generate_edge_type_list():
     
     # 4. 直接使用LLM生成的结果，不进行额外分类
     num_edges = edge_conn.shape[1]
+    try:
+        predictions = validate_llm_predictions(predictions, need_pred_edges, num_edges)
+    except ValueError as e:
+        print(f"LLM预测结果校验失败: {e}")
+        return None
     
     # 生成pred_labels：与原始程序格式一致，形状为(num_edges,)
     # 初始化所有边缘为空白边缘
