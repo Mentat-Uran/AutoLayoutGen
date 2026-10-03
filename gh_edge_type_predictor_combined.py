@@ -199,8 +199,8 @@ def generate_edge_type_list():
         print(f"加载到 {edge_conn.shape[1]} 个边缘连接")
         print(f"加载到 {len(node_attrs)} 个节点属性")
         
-        # 加载布局矩阵从FPGGen_RoomLayoutMatrix.json
-        layout_matrix_path = os.path.join(FIXED_DIR, "FPGGen_RoomLayoutMatrix.json")
+        # 加载布局矩阵从FPGGen_RoomLayoutMatrix_10x10.json
+        layout_matrix_path = os.path.join(FIXED_DIR, "FPGGen_RoomLayoutMatrix_10x10.json")
         layout_matrix = None
         try:
             with open(layout_matrix_path, 'r') as f:

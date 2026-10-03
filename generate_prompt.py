@@ -36,7 +36,7 @@ EDGE_TYPE_MAP = {
 
 def load_node_attributes_and_edge_connections(file_path):
     """
-    从JSON文件加载节点属性和边缘连接数据，并从FPGGen_RoomLayoutMatrix.json加载布局矩阵
+    从JSON文件加载节点属性和边缘连接数据，并从FPGGen_RoomLayoutMatrix_10x10.json加载布局矩阵
     
     参数:
         file_path: 包含节点属性和边缘连接的JSON文件路径
@@ -61,8 +61,8 @@ def load_node_attributes_and_edge_connections(file_path):
         edge_conn = np.array([source_nodes, target_nodes])
         print(f"Edge connections shape: {edge_conn.shape}")
         
-        # 加载布局矩阵从FPGGen_RoomLayoutMatrix.json
-        layout_matrix_path = os.path.join(FIXED_DIR, "FPGGen_RoomLayoutMatrix.json")
+        # 加载布局矩阵从FPGGen_RoomLayoutMatrix_10x10.json
+        layout_matrix_path = os.path.join(FIXED_DIR, "FPGGen_RoomLayoutMatrix_10x10.json")
         layout_matrix = None
         try:
             with open(layout_matrix_path, 'r') as f:
