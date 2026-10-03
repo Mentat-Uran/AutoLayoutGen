@@ -29,7 +29,8 @@ class BoundaryMaskComponentTests(unittest.TestCase):
     def test_missing_curve_returns_empty_output_without_geometry_calls(self):
         result = load_component(None)
         self.assertEqual(result["a"], [])
-        self.assertNotIn("boundary_mask", result)
+        self.assertEqual(result["boundary_mask"], [])
+        self.assertEqual(json.loads(result["boundary_mask_json"]), [])
 
     def test_valid_curve_is_sampled_once_per_grid_cell(self):
         class Curve:

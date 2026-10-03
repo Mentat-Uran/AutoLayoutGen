@@ -69,4 +69,6 @@ if bnd_crv is not None:
     print(boundary_mask)       
 else:
     # 如果输入曲线无效，返回空列表
-    a = []
+    boundary_mask = []
+    boundary_mask_json = json.dumps(boundary_mask)
+    a = boundary_mask
