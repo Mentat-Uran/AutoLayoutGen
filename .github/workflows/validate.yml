@@ -1,0 +1,35 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  python-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Check Python syntax
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+
+          for source in sorted(Path('.').glob('*.py')):
+              ast.parse(source.read_text(encoding='utf-8'), filename=str(source))
+          PY
+
+      - name: Run API-key configuration tests
+        run: python -m unittest discover -s tests -v
