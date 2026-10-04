@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "gh_edge_type_predictor_combined.py"
+      - "generate_prompt.py"
       - "tests/test_llm_prediction_validation.py"
       - ".github/workflows/prediction-validation.yml"
   push:
     branches: [main]
     paths:
       - "gh_edge_type_predictor_combined.py"
+      - "generate_prompt.py"
       - "tests/test_llm_prediction_validation.py"
       - ".github/workflows/prediction-validation.yml"
 
