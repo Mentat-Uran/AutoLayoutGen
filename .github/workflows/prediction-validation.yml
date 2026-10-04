@@ -1,0 +1,26 @@
+name: Validate LLM predictions
+
+on:
+  pull_request:
+    paths:
+      - "gh_edge_type_predictor_combined.py"
+      - "generate_prompt.py"
+      - "tests/test_llm_prediction_validation.py"
+      - ".github/workflows/prediction-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "gh_edge_type_predictor_combined.py"
+      - "generate_prompt.py"
+      - "tests/test_llm_prediction_validation.py"
+      - ".github/workflows/prediction-validation.yml"
+
+jobs:
+  prediction-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m unittest discover -s tests -v
