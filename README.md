@@ -123,6 +123,8 @@
 
 您也可以根据需要单独运行各个模块：
 
+运行 `1_gh_room_layout_generator.py` 调用火山方舟 API 前，必须在当前进程环境中设置 `ARK_API_KEY`。脚本不会从仓库读取密钥；未配置时会在创建 API 客户端前明确失败。不要把密钥提交到仓库。
+
 ```bash
 # 处理边界矩阵
 python 0_gh_boundary_mask_generator.py

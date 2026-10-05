@@ -58,19 +58,17 @@ def compute_boundary_mask(bnd_curve, M=10, N=10, step=20.0):
     return mask
 
 # bnd_crv是从Grasshopper输入的闭合曲线
-# 计算边界掩码
-boundary_mask = compute_boundary_mask(bnd_crv, M, N, STEP)
-# 将边界掩码转换为JSON字符串
-boundary_mask_json = json.dumps(boundary_mask)
-
-# 检查输入曲线是否有效
+# 先检查输入曲线，再计算一次边界掩码
 if bnd_crv is not None:
-    # 重新计算边界掩码，确保结果正确
     boundary_mask = compute_boundary_mask(bnd_crv, M, N, STEP)
+    # 将边界掩码转换为JSON字符串
+    boundary_mask_json = json.dumps(boundary_mask)
     # 将结果输出到Grasshopper的输出端口a
     a = boundary_mask          
     # 在终端窗口打印边界掩码，便于调试和查看结果
     print(boundary_mask)       
 else:
     # 如果输入曲线无效，返回空列表
-    a = []
+    boundary_mask = []
+    boundary_mask_json = json.dumps(boundary_mask)
+    a = boundary_mask
