@@ -23,6 +23,15 @@ def require_api_key(environ=None):
         raise RuntimeError("ARK_API_KEY environment variable is required to generate a room layout.")
     return api_key
 
+def save_room_layout(room_layout, output_file):
+    """Save generated JSON, creating a parent directory when one is specified."""
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+
+    with open(output_file, "w") as output:
+        json.dump(room_layout, output, indent=2)
+
 def generate_room_layout(system_prompt, user_requirement, api_key):
     """
     调用LLM API生成房间布局矩阵
@@ -212,13 +221,8 @@ def main():
         # 5. 保存结果
         # --------------------------
         
-        # 确保输出目录存在（如果输出路径包含目录）
-        output_dir = os.path.dirname(output_file)
-        os.makedirs(output_dir, exist_ok=True)
-        
         # 将生成的房间布局保存为JSON文件
-        with open(output_file, 'w') as f:
-            json.dump(room_layout, f, indent=2)  # 格式化输出，便于阅读
+        save_room_layout(room_layout, output_file)
         
         # 打印生成结果信息
         print(f"\n----- 生成结果 -----")
