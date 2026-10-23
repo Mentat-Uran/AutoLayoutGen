@@ -190,15 +190,14 @@ def classify_edges(node_attrs, edge_conn, layout_matrix=None):
             is_target_near_door = (abs(target_row - main_door_pos[0]) <= 1 and abs(target_col - main_door_pos[1]) <= 1)
             is_near_main_door = (is_source_near_door or is_target_near_door)
         
-        # 只将完全外部边缘（两个节点都在0区域）自动标记为空白边缘(0)
-        # 其余所有边缘，包括建筑外墙边缘和功能分区交界处边缘，都需要LLM预测
-        if is_both_external:
-            # 完全外部边缘：两个节点都在0区域（空地）→ 自动标记为空白边缘(0)
-            # 0代表空地，那里的墙应该是空的
+        is_same_internal = (is_both_internal and source_zone == target_zone)
+
+        # Keep prompt generation aligned with the consumer: fully external and
+        # same-zone internal edges are automatically assigned type 0.
+        if is_both_external or is_same_internal:
             auto_label_edges.append(i)
-        else:  # is_same_internal or is_crossing_external or is_crossing_internal
-            # 其余所有边缘，包括建筑外墙边缘、功能分区内部边缘和功能分区交界处边缘
-            # 这些边缘都需要LLM预测
+        else:
+            # Building boundaries and edges crossing between zones need prediction.
             need_pred_edges.append(i)
     
     return need_pred_edges, auto_label_edges

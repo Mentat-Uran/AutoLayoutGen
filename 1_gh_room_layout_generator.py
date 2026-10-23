@@ -15,6 +15,23 @@ import json
 # 导入火山方舟API客户端库，用于调用LLM服务
 from volcenginesdkarkruntime import Ark
 
+def require_api_key(environ=None):
+    """Return the configured Ark API key or fail before constructing a client."""
+    environment = os.environ if environ is None else environ
+    api_key = environment.get("ARK_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("ARK_API_KEY environment variable is required to generate a room layout.")
+    return api_key
+
+def save_room_layout(room_layout, output_file):
+    """Save generated JSON, creating a parent directory when one is specified."""
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+
+    with open(output_file, "w") as output:
+        json.dump(room_layout, output, indent=2)
+
 def generate_room_layout(system_prompt, user_requirement, api_key):
     """
     调用LLM API生成房间布局矩阵
@@ -76,13 +93,8 @@ def main():
     # 1. 配置参数
     # --------------------------
     
-    # 从环境变量获取API密钥（推荐生产环境使用）
-    api_key = os.environ.get('ARK_API_KEY')
-    # 如果环境变量中没有API密钥，使用硬编码的测试密钥
-    if not api_key:
-        # 硬编码密钥，仅用于测试和开发环境
-        api_key = "df09ff8e-4b81-4cd3-810e-3da8ed184829"
-    
+    api_key = require_api_key()
+
     # 输出文件路径配置：使用当前目录
     output_file = "FPGGen_RoomLayoutMatrix_10x10.json"
     
@@ -209,13 +221,8 @@ def main():
         # 5. 保存结果
         # --------------------------
         
-        # 确保输出目录存在（如果输出路径包含目录）
-        output_dir = os.path.dirname(output_file)
-        os.makedirs(output_dir, exist_ok=True)
-        
         # 将生成的房间布局保存为JSON文件
-        with open(output_file, 'w') as f:
-            json.dump(room_layout, f, indent=2)  # 格式化输出，便于阅读
+        save_room_layout(room_layout, output_file)
         
         # 打印生成结果信息
         print(f"\n----- 生成结果 -----")

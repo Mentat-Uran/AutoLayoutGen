@@ -125,6 +125,8 @@
 
 模块 `1_gh_room_layout_generator.py` 默认生成 `FPGGen_RoomLayoutMatrix_10x10.json`；模块 2、`generate_prompt.py` 和 `gh_edge_type_predictor_combined.py` 使用同一文件名读取布局矩阵。
 
+运行 `1_gh_room_layout_generator.py` 调用火山方舟 API 前，必须在当前进程环境中设置 `ARK_API_KEY`。脚本不会从仓库读取密钥；未配置时会在创建 API 客户端前明确失败。不要把密钥提交到仓库。
+
 ```bash
 # 处理边界矩阵
 python 0_gh_boundary_mask_generator.py
