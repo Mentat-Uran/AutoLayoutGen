@@ -10,7 +10,7 @@ import json
 # 导入OS库，用于文件和目录操作
 import os
 
-json_file_path = "FPGGen_RoomLayoutMatrix.json"
+json_file_path = "FPGGen_RoomLayoutMatrix_10x10.json"
 
 # Set input & output directories
 input_dir = '.'
